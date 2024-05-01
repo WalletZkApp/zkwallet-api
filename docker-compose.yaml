@@ -4,11 +4,18 @@ services:
     ports:
       - ${DATABASE_PORT}:5432
     volumes:
-      - boilerplate-db:/var/lib/postgresql/data
+      - walletzk-db:/var/lib/postgresql/data
     environment:
       POSTGRES_USER: ${DATABASE_USERNAME}
       POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
       POSTGRES_DB: ${DATABASE_NAME}
+    networks:
+      - walletzk
+    healthcheck:
+      test: ['CMD', 'pg_isready', '-U', 'postgres', '-d', 'walletzk']
+      interval: 5s
+      timeout: 10s
+      retries: 5
 
   maildev:
     build:
@@ -17,12 +24,16 @@ services:
     ports:
       - ${MAIL_CLIENT_PORT}:1080
       - ${MAIL_PORT}:1025
+    networks:
+      - walletzk
 
   adminer:
     image: adminer
     restart: always
     ports:
       - 8080:8080
+    networks:
+      - walletzk
 
   # Uncomment to use redis
   # redis:
@@ -30,12 +41,20 @@ services:
   #   ports:
   #     - 6379:6379
 
-  api:
+  walletzk-api:
     build:
       context: .
       dockerfile: Dockerfile
     ports:
       - ${APP_PORT}:${APP_PORT}
+    networks:
+      - walletzk
+    depends_on:
+      postgres:
+        condition: service_healthy
 
 volumes:
-  boilerplate-db:
+  walletzk-db:
+
+networks:
+  walletzk:

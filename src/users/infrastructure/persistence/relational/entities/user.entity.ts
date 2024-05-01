@@ -21,19 +21,33 @@ import { EntityRelationalHelper } from '../../../../../utils/relational-entity-h
 // We duplicate these rules because you can choose not to use adapters
 // in your project and return an ORM entity directly in response.
 import { Exclude, Expose } from 'class-transformer';
+import { Key } from 'src/keys/domain/key';
+import { KeyEntity } from 'src/keys/infrastructure/persistence/relational/entities/key.entity';
 
 @Entity({
   name: 'user',
 })
 export class UserEntity extends EntityRelationalHelper implements User {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column({ type: String, unique: true, nullable: true })
+  @Expose({ groups: ['me', 'admin'] })
+  username?: string | null;
 
   // For "string | null" we need to use String type.
   // More info: https://github.com/typeorm/typeorm/issues/2567
   @Column({ type: String, unique: true, nullable: true })
   @Expose({ groups: ['me', 'admin'] })
-  email: string | null;
+  email?: string | null;
+
+  @Column({ type: String, unique: true, nullable: true })
+  @Expose({ groups: ['me', 'admin'] })
+  zkAppAddress?: string | null;
+
+  @Column({ type: String, unique: true, nullable: true })
+  @Expose({ groups: ['me', 'admin'] })
+  minaAddress?: string | null;
 
   @Column({ nullable: true })
   @Exclude({ toPlainOnly: true })
@@ -41,6 +55,12 @@ export class UserEntity extends EntityRelationalHelper implements User {
 
   @Exclude({ toPlainOnly: true })
   public previousPassword?: string;
+
+  @ManyToOne(() => KeyEntity)
+  key?: Key | null;
+
+  @ManyToOne(() => KeyEntity)
+  otpKey?: Key | null;
 
   @AfterLoad()
   public loadPreviousPassword(): void {
@@ -87,4 +107,10 @@ export class UserEntity extends EntityRelationalHelper implements User {
 
   @DeleteDateColumn()
   deletedAt: Date;
+
+  @ManyToOne(() => UserEntity)
+  createdBy?: UserEntity | null;
+
+  @ManyToOne(() => UserEntity)
+  updatedBy?: UserEntity | null;
 }

@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module } from '@nestjs/common';
 import { UsersModule } from './users/users.module';
 import { FilesModule } from './files/files.module';
 import { AuthModule } from './auth/auth.module';
@@ -7,16 +7,16 @@ import authConfig from './auth/config/auth.config';
 import appConfig from './config/app.config';
 import mailConfig from './mail/config/mail.config';
 import fileConfig from './files/config/file.config';
-import facebookConfig from './auth-facebook/config/facebook.config';
 import googleConfig from './auth-google/config/google.config';
 import twitterConfig from './auth-twitter/config/twitter.config';
 import appleConfig from './auth-apple/config/apple.config';
+import minaConfig from './mina/config/mina.config';
 import path from 'path';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthAppleModule } from './auth-apple/auth-apple.module';
-import { AuthFacebookModule } from './auth-facebook/auth-facebook.module';
 import { AuthGoogleModule } from './auth-google/auth-google.module';
+import { AuthMiddleware } from './auth.middleware';
 import { AuthTwitterModule } from './auth-twitter/auth-twitter.module';
 import { I18nModule } from 'nestjs-i18n/dist/i18n.module';
 import { HeaderResolver } from 'nestjs-i18n';
@@ -27,23 +27,16 @@ import { DataSource, DataSourceOptions } from 'typeorm';
 import { AllConfigType } from './config/config.type';
 import { SessionModule } from './session/session.module';
 import { MailerModule } from './mailer/mailer.module';
-import { MongooseModule } from '@nestjs/mongoose';
-import { MongooseConfigService } from './database/mongoose-config.service';
-import { DatabaseConfig } from './database/config/database-config.type';
+import { AddressesModule } from './addresses/addresses-module';
+import { MinaModule } from './mina/mina.module';
+import { KeysModule } from './keys/keys.module';
 
-// <database-block>
-const infrastructureDatabaseModule = (databaseConfig() as DatabaseConfig)
-  .isDocumentDatabase
-  ? MongooseModule.forRootAsync({
-      useClass: MongooseConfigService,
-    })
-  : TypeOrmModule.forRootAsync({
-      useClass: TypeOrmConfigService,
-      dataSourceFactory: async (options: DataSourceOptions) => {
-        return new DataSource(options).initialize();
-      },
-    });
-// </database-block>
+const infrastructureDatabaseModule = TypeOrmModule.forRootAsync({
+  useClass: TypeOrmConfigService,
+  dataSourceFactory: async (options: DataSourceOptions) => {
+    return new DataSource(options).initialize();
+  },
+});
 
 @Module({
   imports: [
@@ -55,10 +48,10 @@ const infrastructureDatabaseModule = (databaseConfig() as DatabaseConfig)
         appConfig,
         mailConfig,
         fileConfig,
-        facebookConfig,
         googleConfig,
         twitterConfig,
         appleConfig,
+        minaConfig,
       ],
       envFilePath: ['.env'],
     }),
@@ -89,7 +82,6 @@ const infrastructureDatabaseModule = (databaseConfig() as DatabaseConfig)
     UsersModule,
     FilesModule,
     AuthModule,
-    AuthFacebookModule,
     AuthGoogleModule,
     AuthTwitterModule,
     AuthAppleModule,
@@ -97,6 +89,13 @@ const infrastructureDatabaseModule = (databaseConfig() as DatabaseConfig)
     MailModule,
     MailerModule,
     HomeModule,
+    AddressesModule,
+    MinaModule,
+    KeysModule,
   ],
 })
-export class AppModule {}
+export class AppModule {
+  public configure(consumer: MiddlewareConsumer): void {
+    consumer.apply(AuthMiddleware).forRoutes('*');
+  }
+}

@@ -11,6 +11,7 @@ import {
   HttpStatus,
   HttpCode,
   SerializeOptions,
+  HttpException,
 } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -26,6 +27,7 @@ import { User } from './domain/user';
 import { UsersService } from './users.service';
 import { RolesGuard } from '../roles/roles.guard';
 import { infinityPagination } from '../utils/infinity-pagination';
+import { UserDecorator } from './user.decorator';
 
 @ApiBearerAuth()
 @Roles(RoleEnum.admin)
@@ -43,8 +45,25 @@ export class UsersController {
   })
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  create(@Body() createProfileDto: CreateUserDto): Promise<User> {
-    return this.usersService.create(createProfileDto);
+  async create(
+    @Body() createProfileDto: CreateUserDto,
+    @UserDecorator('id') logedInUserId: string,
+  ): Promise<User> {
+    const logedInUser = await this.usersService.findOneOrFail({
+      id: logedInUserId,
+    });
+    if (!logedInUser) {
+      throw new HttpException(
+        {
+          status: HttpStatus.UNPROCESSABLE_ENTITY,
+          errors: {
+            logedInUserId: 'logedInUserDoenstExists',
+          },
+        },
+        HttpStatus.UNPROCESSABLE_ENTITY,
+      );
+    }
+    return this.usersService.create(createProfileDto, logedInUserId);
   }
 
   @SerializeOptions({
@@ -98,11 +117,26 @@ export class UsersController {
     type: String,
     required: true,
   })
-  update(
+  async update(
     @Param('id') id: User['id'],
     @Body() updateProfileDto: UpdateUserDto,
+    @UserDecorator('id') logedInUserId: string,
   ): Promise<User | null> {
-    return this.usersService.update(id, updateProfileDto);
+    const logedInUser = await this.usersService.findOneOrFail({
+      id: logedInUserId,
+    });
+    if (!logedInUser) {
+      throw new HttpException(
+        {
+          status: HttpStatus.UNPROCESSABLE_ENTITY,
+          errors: {
+            logedInUserId: 'logedInUserDoenstExists',
+          },
+        },
+        HttpStatus.UNPROCESSABLE_ENTITY,
+      );
+    }
+    return this.usersService.update(id, updateProfileDto, logedInUserId);
   }
 
   @Delete(':id')

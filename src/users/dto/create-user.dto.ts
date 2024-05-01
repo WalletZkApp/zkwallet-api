@@ -1,32 +1,62 @@
 import { Transform, Type } from 'class-transformer';
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEmail, IsNotEmpty, IsOptional, MinLength } from 'class-validator';
+import { ApiPropertyOptional } from '@nestjs/swagger';
+import { IsEmail, IsOptional, MaxLength, MinLength } from 'class-validator';
 import { FileDto } from '../../files/dto/file.dto';
 import { RoleDto } from '../../roles/dto/role.dto';
 import { StatusDto } from '../../statuses/dto/status.dto';
 import { lowerCaseTransformer } from '../../utils/transformers/lower-case.transformer';
+import { User } from '../domain/user';
+import { Key } from 'src/keys/domain/key';
 
 export class CreateUserDto {
-  @ApiProperty({ example: 'test1@example.com' })
+  @ApiPropertyOptional()
   @Transform(lowerCaseTransformer)
-  @IsNotEmpty()
-  @IsEmail()
-  email: string | null;
+  @IsOptional()
+  username?: string | null;
 
-  @ApiProperty()
+  @ApiPropertyOptional({ example: 'test1@example.com' })
+  @Transform(lowerCaseTransformer)
+  @IsOptional()
+  @IsEmail()
+  email?: string | null;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @MinLength(55)
+  @MaxLength(55)
+  zkAppAddress?: string | null;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @MinLength(55)
+  @MaxLength(55)
+  minaAddress?: string | null;
+
+  @ApiPropertyOptional()
+  @IsOptional()
   @MinLength(6)
   password?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @MinLength(6)
+  key?: Key | null;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @MinLength(6)
+  otpKey?: Key | null;
 
   provider?: string;
 
   socialId?: string | null;
 
-  @ApiProperty({ example: 'John' })
-  @IsNotEmpty()
+  @ApiPropertyOptional({ example: 'John' })
+  @IsOptional()
   firstName: string | null;
 
-  @ApiProperty({ example: 'Doe' })
-  @IsNotEmpty()
+  @ApiPropertyOptional({ example: 'Doe' })
+  @IsOptional()
   lastName: string | null;
 
   @ApiPropertyOptional({ type: () => FileDto })
@@ -44,4 +74,7 @@ export class CreateUserDto {
   status?: StatusDto;
 
   hash?: string | null;
+
+  createdBy?: User | null;
+  updatedBy?: User | null;
 }

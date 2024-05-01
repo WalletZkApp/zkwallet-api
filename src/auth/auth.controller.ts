@@ -23,6 +23,7 @@ import { AuthRegisterLoginDto } from './dto/auth-register-login.dto';
 import { LoginResponseType } from './types/login-response.type';
 import { NullableType } from '../utils/types/nullable.type';
 import { User } from '../users/domain/user';
+import { AuthWeb3LoginDto } from './dto/auth-web3-login.dto';
 
 @ApiTags('Auth')
 @Controller({
@@ -31,6 +32,18 @@ import { User } from '../users/domain/user';
 })
 export class AuthController {
   constructor(private readonly service: AuthService) {}
+
+  @SerializeOptions({
+    groups: ['me'],
+  })
+  @Post('web3/login')
+  @HttpCode(HttpStatus.OK)
+  public web3Login(
+    @Body() loginDto: AuthWeb3LoginDto,
+  ): Promise<LoginResponseType> {
+    console.log('loginDto', loginDto);
+    return this.service.validateWeb3Login(loginDto);
+  }
 
   @SerializeOptions({
     groups: ['me'],

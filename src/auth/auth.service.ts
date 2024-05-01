@@ -1,6 +1,7 @@
 import {
   HttpStatus,
   Injectable,
+  Logger,
   NotFoundException,
   UnauthorizedException,
   UnprocessableEntityException,
@@ -10,6 +11,7 @@ import crypto from 'crypto';
 import { randomStringGenerator } from '@nestjs/common/utils/random-string-generator.util';
 import { JwtService } from '@nestjs/jwt';
 import bcrypt from 'bcryptjs';
+import Client, { NetworkId } from 'mina-signer';
 import { AuthEmailLoginDto } from './dto/auth-email-login.dto';
 import { AuthUpdateDto } from './dto/auth-update.dto';
 import { AuthProvidersEnum } from './auth-providers.enum';
@@ -28,16 +30,119 @@ import { Session } from '../session/domain/session';
 import { SessionService } from '../session/session.service';
 import { StatusEnum } from '../statuses/statuses.enum';
 import { User } from '../users/domain/user';
+import { AuthWeb3LoginDto } from './dto/auth-web3-login.dto';
+import { KeysService } from 'src/keys/keys.service';
 
 @Injectable()
 export class AuthService {
+  private logger = new Logger(UsersService.name);
+
   constructor(
     private jwtService: JwtService,
     private usersService: UsersService,
     private sessionService: SessionService,
     private mailService: MailService,
     private configService: ConfigService<AllConfigType>,
+    private keysService: KeysService,
   ) {}
+
+  async validateWeb3Login(
+    loginDto: AuthWeb3LoginDto,
+  ): Promise<LoginResponseType> {
+    const network: NetworkId = loginDto.network as NetworkId;
+    const signedData = loginDto.signedData;
+    const sharedKey = loginDto.sharedKey;
+    const sharesOtpKey = loginDto.sharesOtpKey;
+    const publicKey = signedData.publicKey;
+    const zkAppAddress = loginDto.zkAppAddress;
+
+    const verifyBody = {
+      network,
+      signedData,
+    };
+
+    const client = new Client({ network });
+    const verifyResult = client.verifyMessage({
+      ...verifyBody,
+      signature: signedData.signature,
+      publicKey: signedData.publicKey,
+      data: signedData.data,
+    });
+    if (!verifyResult) {
+      this.logger.error('incorrectSignature');
+      throw new UnprocessableEntityException({
+        status: HttpStatus.UNPROCESSABLE_ENTITY,
+        errors: {
+          signature: 'incorrectSignature',
+        },
+      });
+    }
+    console.log('verifyResult ==>', verifyResult);
+
+    let user = await this.usersService.findOne({
+      minaAddress: publicKey,
+    });
+    if (!user) {
+      console.log('start registerUserWithWeb3Wallet');
+      user = await this.registerUserWithWeb3Wallet(
+        publicKey,
+        sharedKey as string,
+        sharesOtpKey as string,
+        zkAppAddress as string,
+      );
+    }
+
+    const hash = crypto
+      .createHash('sha256')
+      .update(randomStringGenerator())
+      .digest('hex');
+
+    const session = await this.sessionService.create({
+      user,
+      hash,
+    });
+
+    const { token, refreshToken, tokenExpires } = await this.getTokensData({
+      id: user.id,
+      role: user.role,
+      sessionId: session.id,
+      hash,
+    });
+
+    return {
+      refreshToken,
+      token,
+      tokenExpires,
+      user,
+    };
+  }
+
+  async registerUserWithWeb3Wallet(
+    publicKey: string,
+    sharedKey: string,
+    sharesOtpKey: string,
+    zkAppAddress: string,
+  ): Promise<User> {
+    let key = await this.keysService.findOne({ key: sharedKey });
+    if (!key) {
+      key = await this.keysService.create({ key: sharedKey });
+    }
+
+    let newSharesOtpKey = await this.keysService.findOne({ key: sharesOtpKey });
+    if (!newSharesOtpKey) {
+      newSharesOtpKey = await this.keysService.create({ key: sharesOtpKey });
+    }
+
+    return this.usersService.create({
+      minaAddress: publicKey,
+      zkAppAddress,
+      key,
+      otpKey: newSharesOtpKey,
+      provider: AuthProvidersEnum.web3,
+      firstName: null,
+      lastName: null,
+    });
+  }
 
   async validateLogin(loginDto: AuthEmailLoginDto): Promise<LoginResponseType> {
     const user = await this.usersService.findOne({
@@ -45,6 +150,7 @@ export class AuthService {
     });
 
     if (!user) {
+      this.logger.error('validateLogin: notFound');
       throw new UnprocessableEntityException({
         status: HttpStatus.UNPROCESSABLE_ENTITY,
         errors: {
@@ -54,6 +160,7 @@ export class AuthService {
     }
 
     if (user.provider !== AuthProvidersEnum.email) {
+      this.logger.error('validateLogin: needLoginViaProvider');
       throw new UnprocessableEntityException({
         status: HttpStatus.UNPROCESSABLE_ENTITY,
         errors: {
@@ -63,6 +170,7 @@ export class AuthService {
     }
 
     if (!user.password) {
+      this.logger.error('validateLogin: incorrectPassword');
       throw new UnprocessableEntityException({
         status: HttpStatus.UNPROCESSABLE_ENTITY,
         errors: {
