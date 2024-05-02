@@ -55,9 +55,9 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
-  webserver:
+  nginx-webserver:
     image: nginx:mainline-alpine
-    container_name: webserver
+    container_name: nginx-webserver
     restart: unless-stopped
     ports:
       - '80:80'
@@ -79,13 +79,21 @@ services:
       - certbot-var:/var/lib/letsencrypt
       - web-root:/var/www/html
     depends_on:
-      - webserver
+      - nginx-webserver
     networks:
       - walletzk
     command: certonly --webroot --webroot-path=/var/www/html --email hello@walletzk.app --agree-tos --no-eff-email --staging -d api.walletzk.app
 
 volumes:
   walletzk-db:
+  certbot-etc:
+  certbot-var:
+  web-root:
+    driver: local
+    driver_opts:
+      type: none
+      device: /home/zkwallet/node_project/views/
+      o: bind
 
 networks:
   walletzk:
