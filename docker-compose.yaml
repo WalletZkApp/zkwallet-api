@@ -41,7 +41,7 @@ services:
   #   ports:
   #     - 6379:6379
 
-  walletzk-api:
+  zkwallet-api:
     build:
       context: .
       dockerfile: Dockerfile

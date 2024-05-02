@@ -119,7 +119,7 @@ export class UserMapper {
     userEntity.deletedAt = user.deletedAt;
     userEntity.createdBy = createdByUser;
     userEntity.updatedBy = updatedByUser;
-    userEntity.deletedBy = user.deletedBy;
+    userEntity.deletedBy = deletedByUser;
     return userEntity;
   }
 }
