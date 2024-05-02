@@ -94,7 +94,13 @@ volumes:
     driver: local
     driver_opts:
       type: none
-      device: /home/zkwallet/zkwallet-api/ssl/dhparam/
+      device: /home/zkwallet/zkwallet-api/
+      o: bind
+  dhparam:
+    driver: local
+    driver_opts:
+      type: none
+      device: /home/zkwallet/zkwallet-api/dhparam/
       o: bind
 
 networks:
