@@ -92,7 +92,7 @@ volumes:
     driver: local
     driver_opts:
       type: none
-      device: /home/zkwallet/node_project/views/
+      device: /home/zkwallet/zkwallet-api/
       o: bind
 
 networks:
