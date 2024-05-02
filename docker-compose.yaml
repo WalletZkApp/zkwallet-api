@@ -61,11 +61,13 @@ services:
     restart: unless-stopped
     ports:
       - '80:80'
+      - '443:443'
     volumes:
       - web-root:/var/www/html
       - ./nginx-conf:/etc/nginx/conf.d
       - certbot-etc:/etc/letsencrypt
       - certbot-var:/var/lib/letsencrypt
+      - dhparam:/etc/ssl/certs
     depends_on:
       - zkwallet-api
     networks:
@@ -92,7 +94,7 @@ volumes:
     driver: local
     driver_opts:
       type: none
-      device: /home/zkwallet/zkwallet-api/
+      device: /home/zkwallet/zkwallet-api/ssl/dhparam/
       o: bind
 
 networks:
