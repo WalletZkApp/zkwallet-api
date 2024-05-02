@@ -45,6 +45,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    container_name: zkwallet-api
     ports:
       - ${APP_PORT}:${APP_PORT}
     networks:
@@ -52,6 +53,36 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    restart: unless-stopped
+
+  webserver:
+    image: nginx:mainline-alpine
+    container_name: webserver
+    restart: unless-stopped
+    ports:
+      - '80:80'
+    volumes:
+      - web-root:/var/www/html
+      - ./nginx-conf:/etc/nginx/conf.d
+      - certbot-etc:/etc/letsencrypt
+      - certbot-var:/var/lib/letsencrypt
+    depends_on:
+      - walletzk-api
+    networks:
+      - walletzk
+
+  certbot:
+    image: certbot/certbot
+    container_name: certbot
+    volumes:
+      - certbot-etc:/etc/letsencrypt
+      - certbot-var:/var/lib/letsencrypt
+      - web-root:/var/www/html
+    depends_on:
+      - webserver
+    networks:
+      - walletzk
+    command: certonly --webroot --webroot-path=/var/www/html --email hello@walletzk.app --agree-tos --no-eff-email --staging -d api.walletzk.app
 
 volumes:
   walletzk-db:

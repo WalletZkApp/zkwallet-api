@@ -32,6 +32,11 @@ export class KeyMapper {
       updatedByUser.id = user.updatedBy.id;
     }
 
+    if (user.deletedBy) {
+      deletedByUser = new UserEntity();
+      deletedByUser.id = user.deletedBy.id;
+    }
+
     const keyEntity = new KeyEntity();
     if (key.id && typeof key.id === 'string') {
       keyEntity.id = key.id;

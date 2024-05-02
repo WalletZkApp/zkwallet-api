@@ -10,6 +10,7 @@ import { verify } from 'jsonwebtoken';
 export class AuthMiddleware implements NestMiddleware {
   constructor() {}
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   async use(req: Request, res: Response, next: () => void) {
     const bearerHeader = req.headers.authorization;
 

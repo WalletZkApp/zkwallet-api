@@ -33,7 +33,7 @@ export class KeysService {
     const clonedPayload = { ...createKeyDto };
 
     if (clonedPayload.key) {
-      const encryptedKey = await this.encryptKey(clonedPayload.key);
+      const encryptedKey = this.encryptKey(clonedPayload.key);
       clonedPayload.key = encryptedKey.toString();
     }
     const result = await this.keysRepository.create(clonedPayload);
@@ -43,7 +43,7 @@ export class KeysService {
   async findOne(fields: EntityCondition<Key>): Promise<NullableType<Key>> {
     const clonedResult = await this.keysRepository.findOne(fields);
     if (clonedResult && clonedResult.key) {
-      const decryptedKey = await this.decryptKey(clonedResult.key);
+      const decryptedKey = this.decryptKey(clonedResult.key);
       clonedResult.key = decryptedKey.toString();
     }
     return clonedResult;
@@ -62,7 +62,7 @@ export class KeysService {
     return this.keysRepository.softDelete(id);
   }
 
-  private async encryptKey(key: string): Promise<string> {
+  private encryptKey(key: string): string {
     const iv = crypto.randomBytes(16);
 
     const cipher = crypto.createCipheriv('aes-256-cbc', this.secretKey, iv);
@@ -72,7 +72,7 @@ export class KeysService {
     return encryptedData;
   }
 
-  private async decryptKey(encryptedKey: string): Promise<string> {
+  private decryptKey(encryptedKey: string): string {
     const iv = Buffer.from(encryptedKey.slice(0, 32), 'hex');
     const encryptedText = encryptedKey.slice(32);
     const decipher = crypto.createDecipheriv('aes-256-cbc', this.secretKey, iv);

@@ -170,7 +170,7 @@ export class AddressesController {
     @UserDecorator('id') logedInUserId: string,
   ): Promise<Address | null> {
     const logedInUser = await this.addressesService.checkUser(logedInUserId);
-    return this.addressesService.update(id, updateAddressDto);
+    return this.addressesService.update(id, updateAddressDto, logedInUser);
   }
 
   @SerializeOptions({

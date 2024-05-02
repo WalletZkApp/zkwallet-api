@@ -4,6 +4,6 @@ import { MinaController } from './mina.controller';
 
 @Module({
   providers: [MinaService],
-  controllers: [MinaController]
+  controllers: [MinaController],
 })
 export class MinaModule {}

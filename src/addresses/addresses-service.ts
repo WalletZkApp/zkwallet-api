@@ -103,19 +103,13 @@ export class AddressesService {
   async update(
     id: Address['id'],
     payload: DeepPartial<Address>,
-    logedInUserId?: string,
+    logedInUser?: User,
   ): Promise<Address | null> {
     const clonedPayload = { ...payload };
 
-    if (logedInUserId) {
-      const logedInUser: NullableType<User> = await this.usersService.findOne({
-        id: logedInUserId,
-      });
-
-      if (logedInUser) {
-        clonedPayload.user = logedInUser;
-        clonedPayload.updatedBy = logedInUser;
-      }
+    if (logedInUser) {
+      clonedPayload.user = logedInUser;
+      clonedPayload.updatedBy = logedInUser;
     }
 
     return this.addressesRepository.update(id, clonedPayload);

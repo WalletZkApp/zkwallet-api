@@ -1,24 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 // We test here with Add contract
-import {
-  AccountUpdate,
-  Field,
-  Mina,
-  PrivateKey,
-  fetchAccount,
-  PublicKey,
-} from 'o1js';
+import { AccountUpdate, Mina, PrivateKey, PublicKey } from 'o1js';
 import { Add } from './Add';
-import { KeysService } from 'src/keys/keys.service';
-import { CreateKeyDto } from 'src/keys/dto/create-key.dto';
 import { AllConfigType } from 'src/config/config.type';
 import { Contract } from './domain/contract';
-
-interface VerificationKeyData {
-  data: string;
-  hash: Field;
-}
 
 @Injectable()
 export class MinaService {
@@ -55,8 +41,8 @@ export class MinaService {
     const sender: PublicKey = senderKey.toPublicKey();
 
     // zkApp compilation
-    let zkApp = new Add(zkAppAddress);
-    this.logger.log('Compiling the smart contract.');
+    const zkApp = new Add(zkAppAddress);
+    this.logger.log('Compiling the smart contract.', zkApp);
     await Add.compile();
 
     // zkApp deployment
@@ -68,9 +54,10 @@ export class MinaService {
     );
     const transaction = await Mina.transaction(
       { sender, fee: transactionFee },
+      // eslint-disable-next-line @typescript-eslint/require-await
       async () => {
-        // Modify the callback function to return a Promise<void>
         AccountUpdate.fundNewAccount(sender);
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         zkApp.deploy();
       },
     );

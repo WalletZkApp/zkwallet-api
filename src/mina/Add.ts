@@ -17,6 +17,7 @@ export class Add extends SmartContract {
     this.num.set(Field(1));
   }
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   @method async update() {
     const currentState = this.num.getAndRequireEquals();
     const newState = currentState.add(2);

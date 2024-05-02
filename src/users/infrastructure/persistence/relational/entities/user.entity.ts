@@ -113,4 +113,7 @@ export class UserEntity extends EntityRelationalHelper implements User {
 
   @ManyToOne(() => UserEntity)
   updatedBy?: UserEntity | null;
+
+  @ManyToOne(() => UserEntity)
+  deletedBy?: UserEntity | null;
 }

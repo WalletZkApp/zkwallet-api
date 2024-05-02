@@ -26,9 +26,15 @@ export class UserSeedService {
 
     if (!countAdmin) {
       const salt = await bcrypt.genSalt();
-      const adminEmail = this.configService.getOrThrow<string>('ADMIN_EMAIL');
-      const adminPassword =
-        this.configService.getOrThrow<string>('ADMIN_PASSWORD');
+      const adminEmail = this.configService.getOrThrow<string>('ADMIN_EMAIL', {
+        infer: true,
+      });
+      const adminPassword = this.configService.getOrThrow<string>(
+        'ADMIN_PASSWORD',
+        {
+          infer: true,
+        },
+      );
       const password = await bcrypt.hash(adminPassword, salt);
 
       await this.repository.save(
