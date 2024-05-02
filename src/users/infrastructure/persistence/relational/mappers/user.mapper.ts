@@ -40,7 +40,6 @@ export class UserMapper {
     let role: RoleEntity | undefined = undefined;
     let createdByUser: UserEntity | undefined = undefined;
     let updatedByUser: UserEntity | undefined = undefined;
-    let deletedByUser: UserEntity | undefined = undefined;
     let privateKey: KeyEntity | undefined = undefined;
     let otpKey: KeyEntity | undefined = undefined;
 
@@ -52,11 +51,6 @@ export class UserMapper {
     if (user.updatedBy) {
       updatedByUser = new UserEntity();
       updatedByUser.id = user.updatedBy.id;
-    }
-
-    if (user.deletedBy) {
-      deletedByUser = new UserEntity();
-      deletedByUser.id = user.deletedBy.id;
     }
 
     if (user.role) {
@@ -119,7 +113,7 @@ export class UserMapper {
     userEntity.deletedAt = user.deletedAt;
     userEntity.createdBy = createdByUser;
     userEntity.updatedBy = updatedByUser;
-    userEntity.deletedBy = deletedByUser;
+    userEntity.deletedBy = updatedByUser;
     return userEntity;
   }
 }
