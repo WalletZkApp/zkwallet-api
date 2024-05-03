@@ -25,7 +25,6 @@ export class AuthMiddleware implements NestMiddleware {
 
     try {
       user = verify(accessToken, jwtSecret || '');
-      console.log('res', res);
     } catch (error) {
       user = null;
     }

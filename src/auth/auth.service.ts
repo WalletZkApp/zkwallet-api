@@ -77,8 +77,6 @@ export class AuthService {
         },
       });
     }
-    console.log('verifyResult ==>', verifyResult);
-
     let user = await this.usersService.findOne({
       minaAddress: publicKey,
     });
@@ -141,6 +139,9 @@ export class AuthService {
       provider: AuthProvidersEnum.web3,
       firstName: null,
       lastName: null,
+      role: {
+        id: RoleEnum.user,
+      },
     });
   }
 

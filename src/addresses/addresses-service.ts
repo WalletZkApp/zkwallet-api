@@ -96,7 +96,6 @@ export class AddressesService {
     fields: EntityCondition<Address>,
     logedInUser: User,
   ): Promise<NullableType<Address>> {
-    console.log('fields', fields);
     return this.addressesRepository.findOne(fields, logedInUser);
   }
 
