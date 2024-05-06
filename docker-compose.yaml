@@ -55,8 +55,8 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
-  nginx-webserver:
-    image: nginx:mainline-alpine
+  nginx:
+    image: nginx:latest
     container_name: nginx-webserver
     restart: unless-stopped
     ports:
