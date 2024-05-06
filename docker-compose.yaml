@@ -56,7 +56,7 @@ services:
     restart: unless-stopped
 
   nginx:
-    image: nginx:latest
+    image: nginx:mainline-alpine
     container_name: nginx-webserver
     restart: unless-stopped
     ports:
