@@ -134,8 +134,8 @@ export class AuthService {
     return this.usersService.create({
       minaAddress: publicKey,
       zkAppAddress,
-      key,
-      otpKey: newSharesOtpKey,
+      sharedkeys: key,
+      sharedOtps: newSharesOtpKey,
       provider: AuthProvidersEnum.web3,
       firstName: null,
       lastName: null,

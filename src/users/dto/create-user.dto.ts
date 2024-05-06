@@ -40,12 +40,12 @@ export class CreateUserDto {
   @ApiPropertyOptional()
   @IsOptional()
   @MinLength(6)
-  key?: Key | null;
+  sharedkeys?: Key | null;
 
   @ApiPropertyOptional()
   @IsOptional()
   @MinLength(6)
-  otpKey?: Key | null;
+  sharedOtps?: Key | null;
 
   provider?: string;
 

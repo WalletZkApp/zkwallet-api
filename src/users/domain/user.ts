@@ -20,10 +20,10 @@ export class User {
   minaAddress?: string | null;
 
   @Exclude({ toPlainOnly: true })
-  key?: Key | null;
+  sharedkeys?: Key | null;
 
   @Exclude({ toPlainOnly: true })
-  otpKey?: Key | null;
+  sharedOtps?: Key | null;
 
   @Exclude({ toPlainOnly: true })
   password?: string;

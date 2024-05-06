@@ -57,10 +57,10 @@ export class UserEntity extends EntityRelationalHelper implements User {
   public previousPassword?: string;
 
   @ManyToOne(() => KeyEntity)
-  key?: Key | null;
+  sharedkeys?: Key | null;
 
   @ManyToOne(() => KeyEntity)
-  otpKey?: Key | null;
+  sharedOtps?: Key | null;
 
   @AfterLoad()
   public loadPreviousPassword(): void {

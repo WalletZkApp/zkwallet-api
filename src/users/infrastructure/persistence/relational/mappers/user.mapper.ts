@@ -16,8 +16,8 @@ export class UserMapper {
     user.minaAddress = raw.minaAddress;
     user.password = raw.password;
     user.previousPassword = raw.previousPassword;
-    user.key = raw.key;
-    user.otpKey = raw.otpKey;
+    user.sharedkeys = raw.sharedkeys;
+    user.sharedOtps = raw.sharedOtps;
     user.provider = raw.provider;
     user.socialId = raw.socialId;
     user.firstName = raw.firstName;
@@ -75,14 +75,14 @@ export class UserMapper {
       status.id = user.status.id;
     }
 
-    if (user.key) {
+    if (user.sharedkeys) {
       privateKey = new KeyEntity();
-      privateKey.id = user.key?.id;
+      privateKey.id = user.sharedkeys?.id;
     }
 
-    if (user.otpKey) {
+    if (user.sharedOtps) {
       otpKey = new KeyEntity();
-      otpKey.id = user.otpKey?.id;
+      otpKey.id = user.sharedOtps?.id;
     }
 
     const userEntity = new UserEntity();
@@ -99,8 +99,8 @@ export class UserMapper {
     }
     userEntity.password = user.password;
     userEntity.previousPassword = user.previousPassword;
-    userEntity.key = privateKey;
-    userEntity.otpKey = otpKey;
+    userEntity.sharedkeys = privateKey;
+    userEntity.sharedOtps = otpKey;
     userEntity.provider = user.provider;
     userEntity.socialId = user.socialId;
     userEntity.firstName = user.firstName;
