@@ -81,7 +81,7 @@ services:
       - certbot-var:/var/lib/letsencrypt
       - web-root:/var/www/html
     depends_on:
-      - nginx-webserver
+      - nginx
     networks:
       - walletzk
     command: certonly --webroot --webroot-path=/var/www/html --email hello@walletzk.app --agree-tos --no-eff-email --staging -d api.walletzk.app
