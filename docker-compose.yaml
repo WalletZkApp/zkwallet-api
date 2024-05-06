@@ -94,13 +94,13 @@ volumes:
     driver: local
     driver_opts:
       type: none
-      device: /home/zkwallet/zkwallet-api/
+      device: /home/ubuntu/zkwallet/zkwallet-api/
       o: bind
   dhparam:
     driver: local
     driver_opts:
       type: none
-      device: /home/zkwallet/zkwallet-api/dhparam/
+      device: /home/ubuntu/zkwallet/zkwallet-api/dhparam/
       o: bind
 
 networks:
