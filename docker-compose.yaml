@@ -2,15 +2,13 @@ services:
   postgres:
     image: postgres:16.2-alpine
     ports:
-      - ${DATABASE_PORT}:5432
+      - ${DATABASE_PORT}:${DATABASE_PORT}
     volumes:
       - walletzk-db:/var/lib/postgresql/data
     environment:
       POSTGRES_USER: ${DATABASE_USERNAME}
       POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
       POSTGRES_DB: ${DATABASE_NAME}
-    networks:
-      - walletzk
     healthcheck:
       test: ['CMD', 'pg_isready', '-U', 'postgres', '-d', 'walletzk']
       interval: 5s
@@ -22,24 +20,14 @@ services:
       context: .
       dockerfile: maildev.Dockerfile
     ports:
-      - ${MAIL_CLIENT_PORT}:1080
-      - ${MAIL_PORT}:1025
-    networks:
-      - walletzk
+      - ${MAIL_CLIENT_PORT}:${MAIL_CLIENT_PORT}
+      - ${MAIL_PORT}:${MAIL_PORT}
 
   adminer:
     image: adminer
     restart: always
     ports:
-      - 8080:8080
-    networks:
-      - walletzk
-
-  # Uncomment to use redis
-  # redis:
-  #   image: redis:7-alpine
-  #   ports:
-  #     - 6379:6379
+      - ${ADMINER_PORT}:${ADMINER_PORT}
 
   zkwallet-api:
     build:
@@ -48,60 +36,26 @@ services:
     container_name: zkwallet-api
     ports:
       - ${APP_PORT}:${APP_PORT}
-    networks:
-      - walletzk
     depends_on:
       postgres:
         condition: service_healthy
     restart: unless-stopped
 
   nginx:
-    image: nginx:mainline-alpine
+    image: jonasal/nginx-certbot:latest
     container_name: nginx-webserver
     restart: unless-stopped
+    environment:
+      - ${CERTBOT_EMAIL}
     ports:
       - '80:80'
       - '443:443'
     volumes:
-      - web-root:/var/www/html
-      - ./nginx-conf:/etc/nginx/conf.d
-      - certbot-etc:/etc/letsencrypt
-      - certbot-var:/var/lib/letsencrypt
-      - dhparam:/etc/ssl/certs
+      - nginx:/etc/letsencrypt
+      - ./nginx-conf:/etc/nginx/user_conf.d
     depends_on:
       - zkwallet-api
-    networks:
-      - walletzk
-
-  certbot:
-    image: certbot/certbot
-    container_name: certbot
-    volumes:
-      - certbot-etc:/etc/letsencrypt
-      - certbot-var:/var/lib/letsencrypt
-      - web-root:/var/www/html
-    depends_on:
-      - nginx
-    networks:
-      - walletzk
-    command: certonly --webroot --webroot-path=/var/www/html --email hello@walletzk.app --agree-tos --no-eff-email --staging -d api.walletzk.app
 
 volumes:
   walletzk-db:
-  certbot-etc:
-  certbot-var:
-  web-root:
-    driver: local
-    driver_opts:
-      type: none
-      device: /home/ubuntu/zkwallet/zkwallet-api/
-      o: bind
-  dhparam:
-    driver: local
-    driver_opts:
-      type: none
-      device: /home/ubuntu/zkwallet/zkwallet-api/dhparam/
-      o: bind
-
-networks:
-  walletzk:
+  nginx:

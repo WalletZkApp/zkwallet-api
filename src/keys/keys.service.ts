@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as crypto from 'crypto';
+import { bytes, str } from '@scure/base';
 import { AllConfigType } from 'src/config/config.type';
 import { DeepPartial } from 'src/utils/types/deep-partial.type';
 import { NullableType } from 'src/utils/types/nullable.type';
@@ -79,5 +80,16 @@ export class KeysService {
     let decrypted = decipher.update(encryptedText, 'hex', 'utf8');
     decrypted += decipher.final('utf8');
     return decrypted;
+  }
+  async encodeBase64(data: string): Promise<string> {
+    const toUint8Array = (data: string) => new TextEncoder().encode(data);
+    const encoded = str('base64', await toUint8Array(data));
+    return encoded;
+  }
+
+  async decodeBase64(data: string): Promise<string> {
+    const data2 = bytes('base64', data);
+    const decoded = await new TextDecoder().decode(data2);
+    return decoded;
   }
 }

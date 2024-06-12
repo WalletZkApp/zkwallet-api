@@ -80,7 +80,7 @@ Switching between TypeORM and Mongoose is implemented based on the [Dependency I
    bun start:dev
    ```
 
-1. Open <http://localhost:3000>
+1. Open <http://localhost:3001>
 
 ---
 
